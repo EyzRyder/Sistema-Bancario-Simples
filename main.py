@@ -53,8 +53,29 @@ def exibir_extrato(saldo,/,*,extrato):
     print(f"\nSaldo: R$ {saldo:.2f}")
     print("==========================================")
 
+def filtrar_usuario(cpf,users):
+    return True
+
 def criar_usuario(users):
-    print()
+    cpf = input("Informe o CPF (somente número): ")
+    user = filtrar_usuario(cpf,users)
+
+    if user:
+        print("\n!!! Já existe usuário com esse CPF! !!!")
+        return
+
+    nome = input("Informe o nome completo: ")
+    data_nascimento = input("Informe a data de nascimento (dd-mm-aaaa): ")
+    endereco = input("Informe o endereço (logradouro, nro - bairro - cidade/sigla estado): ")
+
+    users.append({
+        "nome":nome,
+        "data_nascimento":data_nascimento,
+        "cpf":cpf,
+        "endereco":endereco
+        })
+
+    print("=== Usúario criado com sucesso ! ===")
 
 def criar_conta(AGENCIA,numero_conta,users):
     print()
