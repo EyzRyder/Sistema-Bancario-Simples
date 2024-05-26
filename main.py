@@ -87,7 +87,14 @@ def criar_conta(agencia,numero_conta,users):
     return None
 
 def listar_contas(contas):
-    print()
+    for conta in contas:
+        lin = f"""
+            Agencia:\t{conta['agencia']}
+            C/C:\t{conta['numero_conta']}
+            Titular:\t{conta['user']['nome']}
+        """
+        print("="*100)
+        print(textwrap.dedent(lin))
 
 def main():
     AGENCIA = "0001"
