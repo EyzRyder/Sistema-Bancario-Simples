@@ -10,7 +10,10 @@ O sistema oferece as seguintes operações:
     - O valor do saque não pode exceder o limite de R$ 500,00 por operação.
     - O número máximo de saques diários é limitado a 3.
 3. Extrato: Exibe o extrato das operações realizadas e o saldo atual da conta.
-4. Sair: Encerra o programa.
+4. Nova Conta: Permite a criação de uma nova conta bancária associada a um usuário existente.
+5. Listar Contas: Exibe todas as contas bancárias cadastradas no sistema.
+6. Novo Usuário: Permite a criação de um novo usuário.
+7. Sair: Encerra o programa.
 
 ## Como Usar
 Clone o repositório para o seu ambiente local:
@@ -29,10 +32,14 @@ python main.py
 O menu principal será exibido, permitindo que você escolha entre as opções disponíveis:
 
 ```plaintext
-[d] Depositar
-[s] Sacar
-[e] Extrato
-[q] Sair
+=============== MENU ===============
+[d]    Depositar
+[s]    Sacar
+[e]    Extrato
+[nc]   Nova Conta
+[lc]   Listar Contas
+[nu]   Novo Usuario
+[q]    Sair
 
 =>
 ```
@@ -48,6 +55,12 @@ O menu principal será exibido, permitindo que você escolha entre as opções d
   - Insira o valor do saque, certificando-se de que ele não excede o saldo disponível, o limite de saque ou o número de saques permitidos.
 - Extrato:
   - Selecione a opção 'e' para visualizar o extrato das transações e o saldo atual.
+- Novo Usuário:
+  - Selecione a opção 'nu' para criar um novo usuário.
+- Nova Conta:
+  - Selecione a opção 'nc' para criar uma nova conta associada a um usuário existente.
+- Listar Contas:
+  - Selecione a opção 'lc' para listar todas as contas cadastradas.
 - Sair:
   - Selecione a opção 'q' para encerrar o programa.
 
