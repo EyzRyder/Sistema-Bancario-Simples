@@ -54,7 +54,8 @@ def exibir_extrato(saldo,/,*,extrato):
     print("==========================================")
 
 def filtrar_usuario(cpf,users):
-    return True
+    usuario_filtrado = [user for user in users if user["cpf"] ==cpf]
+    return usuario_filtrado[0] if usuario_filtrado else None
 
 def criar_usuario(users):
     cpf = input("Informe o CPF (somente número): ")
