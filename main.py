@@ -56,7 +56,7 @@ def exibir_extrato(saldo,/,*,extrato):
 def criar_usuario(users):
     print()
 
-def criar_conta(users):
+def criar_conta(AGENCIA,numero_conta,users):
     print()
 
 def listar_contas(contas):
@@ -98,7 +98,9 @@ def main():
             criar_usuario(users)
 
         elif opcao == "nc":
-            criar_conta(users)
+            numero_conta = len(contas)+1
+            conta = criar_conta(AGENCIA,numero_conta, users)
+            if conta: contas.append(conta)
 
         elif opcao == "lc":
             listar_contas(contas)
