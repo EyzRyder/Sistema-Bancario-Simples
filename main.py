@@ -1,8 +1,6 @@
 from os import system
 import textwrap
 
-
-
 def menu():
     menu = """\n
     =============== MENU ===============
@@ -78,8 +76,15 @@ def criar_usuario(users):
 
     print("=== Usúario criado com sucesso ! ===")
 
-def criar_conta(AGENCIA,numero_conta,users):
-    print()
+def criar_conta(agencia,numero_conta,users):
+    cpf = input("Informe o CPF (somente número): ")
+    user = filtrar_usuario(cpf,users)
+
+    if user:
+        print("\n=== Conta criado com sucesso! ===")
+        return {"agencia": agencia, "numero_conta":numero_conta, "user":user}
+    print("\n!!! User não foi encontrado, fluxo de criação de conta encerrado! !!!")
+    return None
 
 def listar_contas(contas):
     print()
