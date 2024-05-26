@@ -15,7 +15,7 @@ O sistema oferece as seguintes operações:
 ## Como Usar
 Clone o repositório para o seu ambiente local:
 ```sh
-git clone https://github.com/seuusuario/sistema-bancario-simples.git
+git clone https://github.com/eyzryder/Sistema-Bancario-Simples.git
 ```
 Navegue até o diretório do projeto:
 ```sh
