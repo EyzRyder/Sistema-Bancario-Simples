@@ -53,6 +53,14 @@ def exibir_extrato(saldo,/,*,extrato):
     print(f"\nSaldo: R$ {saldo:.2f}")
     print("==========================================")
 
+def criar_usuario(users):
+    print()
+
+def criar_conta(users):
+    print()
+
+def listar_contas(contas):
+    print()
 
 def main():
     AGENCIA = "0001"
@@ -85,6 +93,15 @@ def main():
 
         elif opcao == "e":
             exibir_extrato(saldo,extrato=extrato)
+
+        elif opcao == "nu":
+            criar_usuario(users)
+
+        elif opcao == "nc":
+            criar_conta(users)
+
+        elif opcao == "lc":
+            listar_contas(contas)
 
         elif opcao == "q":
             break
