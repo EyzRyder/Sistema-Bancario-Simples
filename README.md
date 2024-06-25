@@ -1,6 +1,9 @@
 # Sistema Bancário Simples
 Este repositório contém um sistema bancário simples implementado em Python. O sistema permite ao usuário realizar operações básicas de banco, como depósito, saque, visualizar extrato e sair do sistema. O objetivo deste projeto é demonstrar conceitos básicos de programação em Python, incluindo controle de fluxo, operações aritméticas, e manipulação de strings.
 
+## Diagrama
+![img](./.github/Diagrama_De_Classe_Sistema_Bancario.png)
+
 ## Funcionalidades
 O sistema oferece as seguintes operações:
 
