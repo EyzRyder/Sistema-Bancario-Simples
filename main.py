@@ -2,7 +2,9 @@ from os import system
 import textwrap
 from abc import ABC,abstractclassmethod,abstractproperty
 from datetime import datetime
+from pathlib import Path
 
+ROOT_PATH = Path(__file__).parent
 
 class ContasIterador:
     def __init__(self, contas):
@@ -31,6 +33,7 @@ class Cliente:
     def __init__(self, endereco):
         self.endereco = endereco
         self.contas = []
+        self.indice_conta = 0
 
     def realizar_transacao(self, conta, transacao):
         if len(conta.historico.transacoes_do_dia())>=10:
@@ -48,6 +51,9 @@ class PessoaFisica(Cliente):
         self.nome = nome
         self.data_nascimento = data_nascimento
         self.cpf = cpf
+
+    def __repr__(self)->str:
+        return f"<{self.__class__.__name__}: ('{self.nome}', '{self.cpf}')>"
 
 
 class Conta:
@@ -116,6 +122,10 @@ class ContaCorrente(Conta):
         self._limite = limite
         self._limite_saques = limite_saques
 
+    @classmethod
+    def nova_conta(cls, cliente, numero, limite, limite_saques):
+        return cls(numero, cliente, limite, limite_saques)
+
     def sacar(self, valor):
         numero_saques = len(
             [
@@ -139,6 +149,10 @@ class ContaCorrente(Conta):
 
         return False
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__}: ('{self.agencia}', '{self.numero}', '{self.cliente.nome}')>"
+
+
     def __str__(self):
         return f"""\
             Agência:\t{self.agencia}
@@ -160,7 +174,7 @@ class Historico:
             {
                 "tipo": transacao.__class__.__name__,
                 "valor": transacao.valor,
-                "data": datetime.now().strftime("%d-%m-%Y %H:%M:%s"),
+                "data": datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
             }
         )
 
@@ -238,7 +252,12 @@ def menu():
 def log_transacao(func):
     def envolope(*args, **kwargs):
         resultado = func(*args, **kwargs)
-        print(f"{datetime.now()}: {func.__name__.upper()}")
+        data_hora = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(ROOT_PATH / "log.txt", "a") as arquivo:
+            arquivo.write(
+                f"[{data_hora}] Função '{func.__name__}' executada com argumentos {args} e {kwargs}. "
+                f"Retornou {resultado}\n"
+            )
         return resultado
     return envolope
 
@@ -353,7 +372,7 @@ def criar_conta(numero_conta, clientes, contas):
         print_error("Cliente não encontrado, fluxo de criação de conta encerrado!")
         return
 
-    conta = ContaCorrente.nova_conta(cliente=cliente, numero=numero_conta)
+    conta = ContaCorrente.nova_conta(cliente=cliente, numero=numero_conta, limite=500, limite_saques=50)
     contas.append(conta)
     cliente.contas.append(conta)
 
@@ -365,6 +384,7 @@ def listar_contas(contas):
         print(textwrap.dedent(str(conta)))
 
 def main():
+    # add these 2 to an csv
     clientes = []
     contas = []
 
