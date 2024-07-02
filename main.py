@@ -1,10 +1,12 @@
 import textwrap
 from abc import ABC, abstractclassmethod, abstractproperty
-from datetime import datetime
+from datetime import datetime, timezone
 from os import system
 from pathlib import Path
+import sqlite3
 
 ROOT_PATH = Path(__file__).parent
+DB_PATH= ROOT_PATH/'banco.db'
 
 
 class ContasIterador:
@@ -44,6 +46,7 @@ class Cliente:
 
     def adicionar_conta(self, conta):
         self.contas.append(conta)
+
 
 
 class PessoaFisica(Cliente):
@@ -115,6 +118,9 @@ class Conta:
             return False
 
         return True
+    def __repr__(self):
+        return f"<{self.__class__.__name__}: ('{self.agencia}', '{self.numero}', '{self.cliente.nome}')>"
+
 
 
 class ContaCorrente(Conta):
@@ -180,7 +186,7 @@ class Historico:
                 yield transacao
 
     def transacoes_do_dia(self):
-        data_atual = datetime.utcnow().date()
+        data_atual = datetime.now(timezone.utc).date()
         transacoes = []
         for transacao in self._transacoes:
             data_transacao = datetime.strptime(transacao["data"], "%d-%m-%Y %H:%M:%S").date()
@@ -199,6 +205,15 @@ class Transacao(ABC):
     def registrar(self, conta):
         pass
 
+    def salvar_transacao(self, conta, tipo):
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute('SELECT id FROM contas WHERE numero = ? AND agencia = ?', (conta.numero, conta.agencia))
+            conta_id = cursor.fetchone()[0]
+            cursor.execute('''INSERT INTO transacoes (tipo, valor, data, conta_id)
+                              VALUES (?, ?, ?, ?)''', (tipo, self.valor, datetime.now().strftime("%Y-%m-%d %H:%M:%S"), conta_id))
+        conn.close()
+
 
 class Saque(Transacao):
     def __init__(self, valor):
@@ -213,6 +228,7 @@ class Saque(Transacao):
 
         if sucesso_transacao:
             conta.historico.adicionar_transacao(self)
+            self.salvar_transacao(conta,self.__class__.__name__)
 
 
 class Deposito(Transacao):
@@ -228,6 +244,8 @@ class Deposito(Transacao):
 
         if sucesso_transacao:
             conta.historico.adicionar_transacao(self)
+            self.salvar_transacao(conta,self.__class__.__name__)
+
 
 
 def menu():
@@ -254,6 +272,11 @@ def log_transacao(func):
                 f"[{data_hora}] Função '{func.__name__}' executada com argumentos {args} e {kwargs}. "
                 f"Retornou {resultado}\n"
             )
+        with sqlite3.connect(DB_PATH) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''INSERT INTO logs (data_hora, acao, detalhes)
+                              VALUES (?, ?, ?)''', (data_hora, func.__name__, str(args) + str(kwargs)))
+        conn.close()
         return resultado
 
     return envolope
@@ -291,6 +314,7 @@ def depositar(clientes):
         return
 
     cliente.realizar_transacao(conta, transacao)
+    atualizar_saldo_conta(conta)
 
 
 @log_transacao
@@ -310,6 +334,7 @@ def sacar(clientes):
         return
 
     cliente.realizar_transacao(conta, transacao)
+    atualizar_saldo_conta(conta)
 
 
 @log_transacao
@@ -361,6 +386,7 @@ def criar_cliente(clientes):
 
     cliente = PessoaFisica(nome=nome, data_nascimento=data_nascimento, cpf=cpf, endereco=endereco)
 
+    salvar_cliente(cliente)
     clientes.append(cliente)
 
     print("\n=== Cliente criado com sucesso! ===")
@@ -376,6 +402,7 @@ def criar_conta(numero_conta, clientes, contas):
         return
 
     conta = ContaCorrente.nova_conta(cliente=cliente, numero=numero_conta, limite=500, limite_saques=50)
+    salvar_conta(conta, cliente.cpf)
     contas.append(conta)
     cliente.contas.append(conta)
 
@@ -387,11 +414,67 @@ def listar_contas(contas):
         print("=" * 100)
         print(textwrap.dedent(str(conta)))
 
+def salvar_cliente(cliente):
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''INSERT INTO clientes (nome, data_nascimento, cpf, endereco)
+                          VALUES (?, ?, ?, ?)''', (cliente.nome, cliente.data_nascimento, cliente.cpf, cliente.endereco))
+    conn.close()
 
-def main():
-    # add these 2 to an csv
+
+def salvar_conta(conta, cpf):
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT id FROM clientes WHERE cpf = ?', (cpf,))
+        cliente_id = cursor.fetchone()[0]
+        cursor.execute('''INSERT INTO contas (numero, agencia, cliente_id, saldo)
+                          VALUES (?, ?, ?, ?)''', (conta.numero, conta.agencia, cliente_id, conta.saldo))
+    conn.close()
+
+def carregar_dados():
     clientes = []
     contas = []
+
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM clientes')
+        clientes_data = cursor.fetchall()
+        for cliente_data in clientes_data:
+            cliente = PessoaFisica(cliente_data[1], cliente_data[2], cliente_data[3], cliente_data[4])
+            clientes.append(cliente)
+            cursor.execute('SELECT * FROM contas WHERE cliente_id = ?', (cliente_data[0],))
+            contas_data = cursor.fetchall()
+            for conta_data in contas_data:
+                conta = ContaCorrente(conta_data[1], cliente)
+                conta._saldo = conta_data[4]
+                cliente.contas.append(conta)
+                contas.append(conta)
+                cursor.execute('SELECT * FROM transacoes WHERE conta_id = ?', (conta_data[0],))
+                transacoes_data = cursor.fetchall()
+                for transacao_data in transacoes_data:
+                    transacao = {
+                        "tipo": transacao_data[1],
+                        "valor": transacao_data[2],
+                        "data": transacao_data[3],
+                    }
+                    conta.historico._transacoes.append(transacao)
+    conn.close()
+
+
+    return clientes, contas
+
+def atualizar_saldo_conta(conta):
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute('''UPDATE contas SET saldo = ? WHERE numero = ? AND agencia = ?''',
+                       (conta.saldo, conta.numero, conta.agencia))
+    conn.close()
+
+
+
+def main():
+    system("clear")
+    clientes, contas = carregar_dados()
 
     while True:
         opcao = menu()
@@ -414,7 +497,6 @@ def main():
         else:
             print_error("Operação inválida, por favor selecione novamente a operação desejada.")
         input("Aperta Enter para continuar")
-        system("clear")
 
-
-main()
+if __name__=="__main__":
+    main()

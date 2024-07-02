@@ -1,1 +1,4 @@
 .env/*
+*.db
+.pytest
+__pycache__/**
