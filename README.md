@@ -2,7 +2,49 @@
 Este repositório contém um sistema bancário simples implementado em Python. O sistema permite ao usuário realizar operações básicas de banco, como depósito, saque, visualizar extrato e sair do sistema. O objetivo deste projeto é demonstrar conceitos básicos de programação em Python, incluindo controle de fluxo, operações aritméticas, e manipulação de strings.
 
 ## Diagrama
-![img](./.github/Diagrama_De_Classe_Sistema_Bancario.png)
+
+
+```mermaid
+classDiagram
+Conta : - Float saldo
+Conta : - Int numero
+Conta : - Str agencia
+Conta : - cliente Cliente
+Conta : - Historico historico
+Conta : + Float saldo()
+Conta : + Conta nova_conta()
+Conta : + Bool depositar()
+Conta : + Bool sacar()
+
+Historico: + Void adicionar_transacao(Transacao transacao)
+
+ContaCorrente: - Float limite
+ContaCorrente: - Int limite_saques
+
+Deposito: - Float valor
+Saque: - Float valor
+
+Transacao: + Void registrar(Conta conta)
+
+Cliente: - Str endereco
+Cliente: - List constas
+Cliente: + Void realizar_transacao(Conta conta,Transacao transacao)
+Cliente: + Void adicionar_conta(Conta conta)
+
+PF: - Str cpf
+PF: - Str nome
+PF: - Date data_nascimento
+
+Conta <|-- Historico
+Conta <|-- ContaCorrente
+Transacao <|-- Deposito
+Transacao <|-- Saque
+Historico <|-- Transacao
+Cliente -- Transacao
+Cliente <|-- PF
+Conta <|-- Cliente
+
+```
 
 ## Funcionalidades
 O sistema oferece as seguintes operações:
